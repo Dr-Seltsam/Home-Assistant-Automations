@@ -1,0 +1,227 @@
+alias: WW-Bereitung_setPeriod_Temp
+description: ""
+triggers:
+  - at: "00:15:00"
+    enabled: true
+    trigger: time
+  - event: sunrise
+    offset: "-00:03:00"
+    trigger: sun
+  - at: input_datetime.zeitpunkt_naechstepv_prognose
+    enabled: true
+    trigger: time
+conditions: []
+actions:
+  - action: solcast_solar.update_forecasts
+    metadata: {}
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 3
+      seconds: 0
+      milliseconds: 0
+  - action: notify.mobile_app_sm_a546b
+    metadata: {}
+    data:
+      message: >
+        Max. PV-Energie 2h-Zeitraum heute um: {{
+        as_timestamp(states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute'))
+        | timestamp_custom('%d.%m.%Y %H:%M') }} mit {{
+        states('sensor.pv_prognose_ermittlung_2h_spitzen_energie_heute') | float
+        | round(1) }} kWh
+      title: PV Vorhersage
+    enabled: false
+  - if:
+      - condition: time
+        before: sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute
+    then:
+      - action: mypyllant.set_dhw_time_program
+        metadata: {}
+        data:
+          time_program:
+            monday:
+              - start_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) - 5 }}
+                end_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 120 }}
+            tuesday:
+              - start_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) - 5 }}
+                end_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 120 }}
+            wednesday:
+              - start_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) - 5 }}
+                end_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 120 }}
+            thursday:
+              - start_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) - 5 }}
+                end_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 120 }}
+            friday:
+              - start_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) - 5 }}
+                end_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 120 }}
+            saturday:
+              - start_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) - 5 }}
+                end_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 120 }}
+            sunday:
+              - start_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) - 5 }}
+                end_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 120 }}
+        target:
+          entity_id: water_heater.smarthome_vw78_domestic_hot_water_0
+      - if:
+          - condition: numeric_state
+            entity_id: sensor.pv_prognose_ermittlung_2h_spitzen_energie_heute
+            above: 3
+        then:
+          - action: water_heater.set_temperature
+            target:
+              entity_id: water_heater.smarthome_vw78_domestic_hot_water_0
+            data:
+              temperature: 60
+          - action: notify.mobile_app_sm_a546b
+            metadata: {}
+            data:
+              message: >
+                Plane WW-Bereitung auf: {{
+                as_timestamp(states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute'))
+                | timestamp_custom('%d.%m.%Y %H:%M') }} mit 60 °C
+              title: Planung WW-Bereitung
+            enabled: false
+        else:
+          - action: water_heater.set_temperature
+            metadata: {}
+            data:
+              temperature: 50
+            target:
+              entity_id: water_heater.smarthome_vw78_domestic_hot_water_0
+          - action: notify.mobile_app_sm_a546b
+            metadata: {}
+            data:
+              message: >
+                Plane WW-Bereitung auf: {{
+                as_timestamp(states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute'))
+                | timestamp_custom('%d.%m.%Y %H:%M') }} mit 50 °C
+              title: Planung WW-Bereitung
+      - action: mypyllant.set_dhw_circulation_time_program
+        metadata: {}
+        data:
+          time_program:
+            monday:
+              - start_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 60 }}
+                end_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 90 }}
+            tuesday:
+              - start_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 60 }}
+                end_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 90 }}
+            wednesday:
+              - start_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 60 }}
+                end_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 90 }}
+            thursday:
+              - start_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 60 }}
+                end_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 90 }}
+            friday:
+              - start_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 60 }}
+                end_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 90 }}
+            saturday:
+              - start_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 60 }}
+                end_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 90 }}
+            sunday:
+              - start_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 60 }}
+                end_time: >
+                  {{
+                  (states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute_minnachmn')
+                  | int) + 90 }}
+        target:
+          entity_id: water_heater.smarthome_vw78_domestic_hot_water_0
+        enabled: false
+  - action: input_datetime.set_datetime
+    metadata: {}
+    data:
+      timestamp: >-
+        {% if
+        as_timestamp(states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute'))
+        - 7200 > as_timestamp(now()) %}
+          {{
+            (as_timestamp(states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute')) 
+            - as_timestamp(now())) / 2 + as_timestamp(now())
+          }}
+        {% else %}
+          {{ as_timestamp(states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute')) - 600 }}
+        {% endif %}      
+    target:
+      entity_id: input_datetime.zeitpunkt_naechstepv_prognose
+mode: single
