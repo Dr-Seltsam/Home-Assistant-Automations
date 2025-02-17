@@ -1,0 +1,22 @@
+{% set forecast = state_attr('sensor.solcast_pv_forecast_prognose_heute', 'detailedForecast') %}
+          {% if forecast %}
+            {% set ns = namespace(max_energy=-1, best_start_time='') %}
+            
+            {% for i in range(0, forecast | length - 3) %}
+              {% set energy = 
+                (forecast[i].pv_estimate10 | float) +
+                (forecast[i+1].pv_estimate10 | float) +
+                (forecast[i+2].pv_estimate10 | float) +
+                (forecast[i+3].pv_estimate10 | float) %}
+              
+              {% if energy > ns.max_energy %}
+                {% set ns.max_energy = energy %}
+                {% set start_time = forecast[i].period_start | as_datetime %}
+                {% set ns.best_start_time = start_time.isoformat() %}
+              {% endif %}
+            {% endfor %}
+            
+            {{ ns.best_start_time if ns.best_start_time else 'unavailable' }}
+          {% else %}
+            unavailable
+          {% endif %}
