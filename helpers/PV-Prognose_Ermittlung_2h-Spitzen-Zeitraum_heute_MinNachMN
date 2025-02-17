@@ -1,0 +1,8 @@
+{% set sensor_time = states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute') %}
+{% if sensor_time %}
+  {% set parsed_time = as_datetime(sensor_time, default=now()) | as_local %}
+  {% set minutes_since_midnight = (parsed_time.hour * 60) + parsed_time.minute %}
+  {{ minutes_since_midnight }}
+{% else %}
+  0
+{% endif %}
