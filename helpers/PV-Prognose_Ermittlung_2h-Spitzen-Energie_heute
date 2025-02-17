@@ -1,0 +1,16 @@
+{% set forecast = state_attr('sensor.solcast_pv_forecast_prognose_heute', 'detailedForecast') %}
+{% set start_time_str = states('sensor.pv_prognose_ermittlung_2h_spitzen_zeitraum_heute') %}
+
+{% if forecast and start_time_str != 'unavailable' %}
+  {% set start_time = start_time_str | as_datetime %}
+  {% set ns = namespace(total_energy=0) %}
+
+  {% for period in forecast if period.period_start | as_datetime >= start_time and 
+                                period.period_start | as_datetime < (start_time + timedelta(minutes=120)) %}
+    {% set ns.total_energy = ns.total_energy + (period.pv_estimate10 | float) %}
+  {% endfor %}
+  
+  {{ ns.total_energy / 2 if ns.total_energy > 0 else 'Keine passende Energie berechnet' }}
+{% else %}
+  Keine Daten verfügbar
+{% endif %}
